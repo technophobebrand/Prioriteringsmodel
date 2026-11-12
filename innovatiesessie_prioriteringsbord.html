@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="nl" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Innovatiesessie 2 - Prioritering & Gezamenlijke Keuzes</title>
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#312e81',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    /* Custom scrollbar for modern desktop look */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .ghost-drag {
+      opacity: 0.4;
+    }
+    .drop-hover {
+      border-color: #6366f1 !important;
+      background-color: #f5f3ff !important;
+    }
+  </style>
+</head>
+<body class="min-h-full text-slate-900 bg-slate-50 antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- Main Container -->
+  <div class="min-h-screen p-4 sm:p-6 lg:p-8">
+    <div class="mx-auto max-w-7xl space-y-6">
+
+      <!-- Header Section -->
+      <header class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 rounded-md bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-600 uppercase tracking-wider">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Innovatiesessie 2
+            </span>
+            <span class="text-xs text-slate-400 font-medium">• Prioriteringsmodel</span>
+          </div>
+          <h1 class="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+            Van individuele scores naar gezamenlijke keuzes
+          </h1>
+          <p class="mt-1 max-w-3xl text-sm text-slate-600">
+            Vul de gezamenlijke scores in, bekijk de automatische ranglijst en plaats ieder onderwerp daarna bewust op het besluitvormingsbord.
+          </p>
+        </div>
+        <div class="flex shrink-0 flex-wrap items-center gap-2">
+          <button id="btn-readme" onclick="toggleModal(true)" class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+            <i data-lucide="settings" class="w-4 h-4 text-slate-500"></i>
+            <span>Uitleg en instellingen</span>
+          </button>
+          <button id="btn-export" onclick="exportWord()" class="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span>Exporteer verslag</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Section 1: Scores Invoeren -->
+      <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 bg-slate-50/50">
+          <div>
+            <h2 class="text-lg font-semibold text-slate-900 flex items-center gap-2">
+              <i data-lucide="sliders" class="w-5 h-5 text-indigo-600"></i> 1. Scores invoeren
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Vul waarden in van 1 (laag/weinig) tot 5 (hoog/veel). De score wordt direct berekend.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="addItem()" class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 transition-colors shadow-sm">
+              <i data-lucide="plus" class="w-4 h-4"></i> Idee toevoegen
+            </button>
+            <button onclick="resetItems()" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+              <i data-lucide="rotate-ccw" class="w-4 h-4 text-slate-400"></i> Reset
+            </button>
+          </div>
+        </div>
+        
+        <div class="overflow-x-auto p-5">
+          <table class="w-full min-w-[850px] text-sm text-left">
+            <thead>
+              <tr class="border-b border-slate-200 text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-50/70">
+                <th class="py-3 px-3 rounded-l-lg">Kansgebied / idee</th>
+                <th class="py-3 px-2 text-center w-24">Waarde</th>
+                <th class="py-3 px-2 text-center w-24">Urgentie</th>
+                <th class="py-3 px-2 text-center w-24">Effort</th>
+                <th class="py-3 px-2 text-center w-24">Haalbaarheid</th>
+                <th class="py-3 px-2 text-center w-28">Score</th>
+                <th class="py-3 px-2 text-center w-12 rounded-r-lg"></th>
+              </tr>
+            </thead>
+            <tbody id="score-table-body" class="divide-y divide-slate-100">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 2: Automatische Ranglijst -->
+      <section class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+        <div class="mb-4">
+          <h2 class="text-lg font-semibold text-slate-900 flex items-center gap-2">
+            <i data-lucide="bar-chart-3" class="w-5 h-5 text-indigo-600"></i> 2. Automatische ranglijst
+          </h2>
+          <p class="mt-0.5 text-xs text-slate-500">Gebruik deze volgorde als startpunt voor de plenaire bespreking.</p>
+        </div>
+        <div id="ranking-grid" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <!-- Rendered via JS -->
+        </div>
+      </section>
+
+      <!-- Section 3: Plenaire Discussie / Besluitvormingsbord -->
+      <section class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+        <div class="mb-5">
+          <h2 class="text-lg font-semibold text-slate-900 flex items-center gap-2">
+            <i data-lucide="kanban" class="w-5 h-5 text-indigo-600"></i> 3. Plenaire discussie
+          </h2>
+          <p class="mt-0.5 text-xs text-slate-500">Kies in ieder vak een toegevoegd idee of sleep kaarten naar de gewenste kolom. Leg voor NOW en NEXT direct een eigenaar en vervolgstap vast.</p>
+        </div>
+
+        <!-- 4 Lanes Desktop Grid -->
+        <div id="board-grid" class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <!-- Rendered via JS -->
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Readme Modal -->
+  <div id="readme-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-950/50 backdrop-blur-sm p-4 transition-opacity duration-200" onclick="handleModalBackdropClick(event)">
+    <div class="relative max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col border border-slate-100">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
+        <div>
+          <div class="text-xs font-semibold uppercase tracking-wide text-indigo-600">Handleiding</div>
+          <h2 class="text-xl font-bold text-slate-900">Uitleg van het prioriteringsbord</h2>
+        </div>
+        <button onclick="toggleModal(false)" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Content -->
+      <div class="space-y-5 overflow-y-auto p-6 text-sm leading-relaxed text-slate-600">
+        <section class="rounded-xl bg-slate-50 p-4 border border-slate-100">
+          <h3 class="font-bold text-slate-900 text-base mb-1">1. Scores verzamelen</h3>
+          <p>Klanten beoordelen waarde en urgentie. De leverancier beoordeelt effort en haalbaarheid. Gebruik schaal 1 tot 5. Bij effort betekent 5 veel inspanning.</p>
+        </section>
+
+        <section class="rounded-xl bg-slate-50 p-4 border border-slate-100">
+          <h3 class="font-bold text-slate-900 text-base mb-1">2. Rekenregel</h3>
+          <p class="font-mono text-xs bg-white p-2 rounded border border-slate-200 text-indigo-900 mb-2">
+            Prioriteit = ((Waarde + Urgentie) / 2) × ((Haalbaarheid + (6 - Effort)) / 2)
+          </p>
+          <p>Klantimpact = (waarde + urgentie) / 2. Leverbaarheid = (haalbaarheid + (6 - effort)) / 2. Prioriteit = klantimpact × leverbaarheid. De maximale score is 25.</p>
+        </section>
+
+        <section class="rounded-xl bg-slate-50 p-4 border border-slate-100">
+          <h3 class="font-bold text-slate-900 text-base mb-1">3. Ranglijst gebruiken</h3>
+          <p>De ranglijst bepaalt de bespreekvolgorde, niet automatisch de uitkomst. Bespreek vooral opvallende verschillen en de aannames daarachter.</p>
+        </section>
+
+        <section class="rounded-xl bg-slate-50 p-4 border border-slate-100">
+          <h3 class="font-bold text-slate-900 text-base mb-1">4. Plenair plaatsen</h3>
+          <p><strong class="text-emerald-700">NOW</strong> betekent daadwerkelijk capaciteit reserveren. <strong class="text-blue-700">NEXT</strong> betekent gericht voorbereiden. <strong class="text-violet-700">LATER</strong> krijgt nu geen actieve opdracht. <strong class="text-red-700">STOP</strong> betekent bewust niet oppakken, tenzij nieuwe informatie aanleiding geeft tot heroverweging.</p>
+        </section>
+
+        <section class="rounded-xl bg-slate-50 p-4 border border-slate-100">
+          <h3 class="font-bold text-slate-900 text-base mb-1">5. Faciliteren</h3>
+          <p>Forceer geen consensus over de cijfers. Maak wel een expliciete keuze per onderwerp. Leg voor minimaal NOW en NEXT een eigenaar en concrete eerstvolgende stap vast.</p>
+        </section>
+
+        <section class="rounded-xl bg-slate-50 p-4 border border-slate-100">
+          <h3 class="font-bold text-slate-900 text-base mb-1">6. Exporteren</h3>
+          <p>De knop <em>Exporteer verslag</em> maakt een Word-compatibel verslag met ranglijst, scores, keuzes, eigenaren en vervolgstappen. Open het bestand in Microsoft Word en sla het desgewenst op als .docx of PDF.</p>
+        </section>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="border-t border-slate-100 bg-slate-50 px-6 py-3 text-right">
+        <button onclick="toggleModal(false)" class="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-700 transition-colors">
+          Begrepen, sluiten
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden transform transition-all duration-300 translate-y-2 opacity-0">
+    <div class="flex items-center gap-2 rounded-xl bg-slate-900 text-white px-4 py-3 text-sm shadow-xl">
+      <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+      <span id="toast-message">Melding</span>
+    </div>
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    // Initial State Definition
+    const initialItems = [
+      { id: 1, name: "Kansgebied / idee 1", value: 3, urgency: 3, effort: 3, feasibility: 3, decision: "", owner: "", nextStep: "" },
+      { id: 2, name: "Kansgebied / idee 2", value: 3, urgency: 3, effort: 3, feasibility: 3, decision: "", owner: "", nextStep: "" }
+    ];
+
+    let items = JSON.parse(JSON.stringify(initialItems));
+
+    // Lanes definition
+    const lanes = [
+      { 
+        key: "NOW", 
+        label: "NOW", 
+        horizon: "0-6 maanden", 
+        border: "border-emerald-500", 
+        head: "bg-emerald-500", 
+        soft: "bg-emerald-50 text-emerald-900 border-emerald-200", 
+        badge: "bg-emerald-100 text-emerald-800",
+        question: "Waar committeren we ons nu aan?" 
+      },
+      { 
+        key: "NEXT", 
+        label: "NEXT", 
+        horizon: "6-12 maanden", 
+        border: "border-blue-500", 
+        head: "bg-blue-500", 
+        soft: "bg-blue-50 text-blue-900 border-blue-200", 
+        badge: "bg-blue-100 text-blue-800",
+        question: "Wat willen we als volgende mogelijk maken?" 
+      },
+      { 
+        key: "LATER", 
+        label: "LATER", 
+        horizon: "12+ maanden", 
+        border: "border-violet-500", 
+        head: "bg-violet-500", 
+        soft: "bg-violet-50 text-violet-900 border-violet-200", 
+        badge: "bg-violet-100 text-violet-800",
+        question: "Wat houden we bewust in beeld?" 
+      },
+      { 
+        key: "STOP", 
+        label: "STOP / PRULLENBAK", 
+        horizon: "Niet oppakken", 
+        border: "border-red-500", 
+        head: "bg-red-500", 
+        soft: "bg-red-50 text-red-900 border-red-200", 
+        badge: "bg-red-100 text-red-800",
+        question: "Waar stoppen we bewust mee?" 
+      }
+    ];
+
+    // Mathematical Helpers
+    const clamp = v => Math.max(1, Math.min(5, Number(v) || 1));
+    const priority = x => ((x.value + x.urgency) / 2) * ((x.feasibility + (6 - x.effort)) / 2);
+
+    // Initial render call
+    window.addEventListener('DOMContentLoaded', () => {
+      renderApp();
+      
+      // Keyboard listener for ESC to close modal
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') toggleModal(false);
+      });
+    });
+
+    // Main Master Render function
+    function renderApp() {
+      renderTable();
+      renderRanking();
+      renderBoard();
+      lucide.createIcons();
+    }
+
+    // Render Table
+    function renderTable() {
+      const tbody = document.getElementById('score-table-body');
+      tbody.innerHTML = items.map(item => {
+        const score = priority(item).toFixed(1);
+        return `
+          <tr class="hover:bg-slate-50/80 transition-colors">
+            <td class="py-3 px-3">
+              <input 
+                type="text" 
+                value="${escapeHtml(item.name)}" 
+                oninput="updateItemField(${item.id}, 'name', this.value, false)"
+                class="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                placeholder="Naam kansgebied of idee"
+              />
+            </td>
+            <td class="py-3 px-2 text-center">
+              <input 
+                type="number" 
+                min="1" 
+                max="5" 
+                value="${item.value}" 
+                onchange="updateItemField(${item.id}, 'value', this.value, true)"
+                class="w-16 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-center text-sm font-semibold focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              />
+            </td>
+            <td class="py-3 px-2 text-center">
+              <input 
+                type="number" 
+                min="1" 
+                max="5" 
+                value="${item.urgency}" 
+                onchange="updateItemField(${item.id}, 'urgency', this.value, true)"
+                class="w-16 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-center text-sm font-semibold focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              />
+            </td>
+            <td class="py-3 px-2 text-center">
+              <input 
+                type="number" 
+                min="1" 
+                max="5" 
+                value="${item.effort}" 
+                onchange="updateItemField(${item.id}, 'effort', this.value, true)"
+                class="w-16 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-center text-sm font-semibold focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              />
+            </td>
+            <td class="py-3 px-2 text-center">
+              <input 
+                type="number" 
+                min="1" 
+                max="5" 
+                value="${item.feasibility}" 
+                onchange="updateItemField(${item.id}, 'feasibility', this.value, true)"
+                class="w-16 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-center text-sm font-semibold focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              />
+            </td>
+            <td class="py-3 px-2 text-center">
+              <span class="inline-block min-w-[3rem] rounded-lg bg-indigo-50 px-2.5 py-1 text-sm font-bold text-indigo-700 border border-indigo-100">
+                ${score}
+              </span>
+            </td>
+            <td class="py-3 px-2 text-center">
+              <button 
+                onclick="removeItem(${item.id})"
+                title="Verwijder idee"
+                class="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+              >
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Render Automatic Ranking
+    function renderRanking() {
+      const rankingGrid = document.getElementById('ranking-grid');
+      const ranked = [...items].sort((a, b) => priority(b) - priority(a));
+
+      if (ranked.length === 0) {
+        rankingGrid.innerHTML = `<div class="col-span-full py-4 text-center text-xs text-slate-400 italic">Geen ideeën om te rangschikken.</div>`;
+        return;
+      }
+
+      rankingGrid.innerHTML = ranked.map((item, index) => {
+        const laneObj = lanes.find(l => l.key === item.decision);
+        const laneBadge = laneObj 
+          ? `<span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded ${laneObj.badge}">${laneObj.label}</span>`
+          : `<span class="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-400">Nog te plaatsen</span>`;
+
+        return `
+          <div class="flex items-center justify-between rounded-xl border border-slate-200/80 bg-white p-3 shadow-sm hover:border-indigo-200 transition-colors">
+            <div class="flex items-center gap-3 min-w-0 pr-2">
+              <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
+                ${index + 1}
+              </span>
+              <div class="min-w-0">
+                <div class="font-semibold text-slate-800 text-sm truncate">${escapeHtml(item.name || 'Naamloos idee')}</div>
+                <div class="mt-0.5">${laneBadge}</div>
+              </div>
+            </div>
+            <div class="shrink-0 rounded-lg bg-indigo-50 px-2.5 py-1 text-sm font-bold text-indigo-700 border border-indigo-100">
+              ${priority(item).toFixed(1)}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render Plenaire Discussie / Besluitvormingsbord
+    function renderBoard() {
+      const boardGrid = document.getElementById('board-grid');
+      const unplaced = items.filter(x => !x.decision);
+
+      boardGrid.innerHTML = lanes.map(lane => {
+        const laneItems = items.filter(x => x.decision === lane.key);
+        
+        return `
+          <div 
+            class="flex flex-col rounded-xl border-2 ${lane.border} bg-white shadow-sm overflow-hidden"
+            ondragover="handleDragOver(event)"
+            ondragleave="handleDragLeave(event)"
+            ondrop="handleDrop(event, '${lane.key}')"
+          >
+            <!-- Lane Header -->
+            <div class="${lane.head} px-4 py-3.5 text-center text-white">
+              <div class="font-bold text-base tracking-wide">${lane.label}</div>
+              <div class="mt-0.5 text-xs font-medium opacity-90">${lane.horizon}</div>
+            </div>
+
+            <div class="p-4 flex-1 flex flex-col space-y-4">
+              <!-- Question box -->
+              <div class="rounded-lg border p-3 text-xs font-medium ${lane.soft}">
+                ${lane.question}
+              </div>
+
+              <!-- Select Dropdown Picker -->
+              <div class="flex gap-2">
+                <select 
+                  id="pick-${lane.key}" 
+                  class="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                >
+                  <option value="" disabled selected>Kies een idee...</option>
+                  ${unplaced.map(u => `<option value="${u.id}">${escapeHtml(u.name)} (${priority(u).toFixed(1)})</option>`).join('')}
+                </select>
+                <button 
+                  onclick="assignFromSelect('${lane.key}')"
+                  class="shrink-0 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 transition-colors"
+                  title="Plaats gekozen idee"
+                >
+                  <i data-lucide="plus" class="w-4 h-4"></i>
+                </button>
+              </div>
+
+              <!-- Assigned Items Stack -->
+              <div class="space-y-3 flex-1">
+                ${laneItems.map(item => `
+                  <div 
+                    draggable="true" 
+                    ondragstart="handleDragStart(event, ${item.id})"
+                    ondragend="handleDragEnd(event)"
+                    class="group relative rounded-xl border border-slate-200 bg-slate-50/70 p-3 shadow-sm hover:border-slate-300 hover:bg-slate-50 transition-all cursor-grab active:cursor-grabbing"
+                  >
+                    <div class="flex items-start justify-between gap-2">
+                      <div class="min-w-0 flex-1">
+                        <div class="font-semibold text-slate-900 text-sm break-words">${escapeHtml(item.name || 'Naamloos idee')}</div>
+                        <div class="mt-1 flex items-center gap-2">
+                          <span class="inline-block rounded-md bg-white px-2 py-0.5 text-[11px] font-bold text-indigo-700 border border-slate-200">
+                            Score ${priority(item).toFixed(1)}
+                          </span>
+                        </div>
+                      </div>
+                      <button 
+                        onclick="unassignItem(${item.id})"
+                        title="Verwijder uit vak"
+                        class="rounded-lg p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition-colors"
+                      >
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                      </button>
+                    </div>
+
+                    <!-- Owner & Next step inputs -->
+                    <div class="mt-3 space-y-2 pt-2 border-t border-slate-200/60">
+                      <div class="relative">
+                        <i data-lucide="user-round" class="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400"></i>
+                        <input 
+                          type="text" 
+                          placeholder="Eigenaar" 
+                          value="${escapeHtml(item.owner)}" 
+                          oninput="updateItemField(${item.id}, 'owner', this.value, false)"
+                          class="w-full rounded-lg border border-slate-200 bg-white pl-8 pr-2.5 py-1 text-xs text-slate-800 placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        />
+                      </div>
+                      <div class="relative">
+                        <i data-lucide="footprints" class="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400"></i>
+                        <input 
+                          type="text" 
+                          placeholder="Eerstvolgende stap" 
+                          value="${escapeHtml(item.nextStep)}" 
+                          oninput="updateItemField(${item.id}, 'nextStep', this.value, false)"
+                          class="w-full rounded-lg border border-slate-200 bg-white pl-8 pr-2.5 py-1 text-xs text-slate-800 placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+
+                ${laneItems.length === 0 ? `
+                  <div class="h-24 rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center text-center p-4 text-xs text-slate-400">
+                    Nog geen ideeën geplaatst
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // State Mutators & Handlers
+    function updateItemField(id, key, value, reRenderAll = true) {
+      const item = items.find(x => x.id === id);
+      if (!item) return;
+
+      if (['value', 'urgency', 'effort', 'feasibility'].includes(key)) {
+        item[key] = clamp(value);
+      } else {
+        item[key] = value;
+      }
+
+      if (reRenderAll) {
+        renderApp();
+      } else {
+        // Fast path for text inputs to avoid losing cursor focus
+        renderRanking();
+      }
+    }
+
+    function addItem() {
+      const newItem = {
+        id: Date.now(),
+        name: `Kansgebied / idee ${items.length + 1}`,
+        value: 3,
+        urgency: 3,
+        effort: 3,
+        feasibility: 3,
+        decision: "",
+        owner: "",
+        nextStep: ""
+      };
+      items.push(newItem);
+      renderApp();
+      showToast("Nieuw idee toegevoegd!");
+    }
+
+    function removeItem(id) {
+      items = items.filter(x => x.id !== id);
+      renderApp();
+      showToast("Idee verwijderd.");
+    }
+
+    function resetItems() {
+      if (confirm("Weet je zeker dat je alle gegevens wilt herstellen naar de beginstand?")) {
+        items = JSON.parse(JSON.stringify(initialItems));
+        renderApp();
+        showToast("Hersteld naar beginstand.");
+      }
+    }
+
+    function assignFromSelect(laneKey) {
+      const selectEl = document.getElementById(`pick-${laneKey}`);
+      if (selectEl && selectEl.value) {
+        const id = Number(selectEl.value);
+        updateItemField(id, 'decision', laneKey, true);
+        showToast(`Geplaatst in ${laneKey}!`);
+      }
+    }
+
+    function unassignItem(id) {
+      updateItemField(id, 'decision', '', true);
+    }
+
+    // Drag and Drop Logic
+    let draggedItemId = null;
+
+    function handleDragStart(e, id) {
+      draggedItemId = id;
+      e.target.classList.add('ghost-drag');
+      e.dataTransfer.setData('text/plain', id);
+    }
+
+    function handleDragEnd(e) {
+      e.target.classList.remove('ghost-drag');
+      draggedItemId = null;
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('drop-hover');
+    }
+
+    function handleDragLeave(e) {
+      e.currentTarget.classList.remove('drop-hover');
+    }
+
+    function handleDrop(e, targetLaneKey) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('drop-hover');
+      if (draggedItemId) {
+        updateItemField(draggedItemId, 'decision', targetLaneKey, true);
+        showToast(`Geplaatst in ${targetLaneKey}!`);
+      }
+    }
+
+    // Modal Control
+    function toggleModal(show) {
+      const modal = document.getElementById('readme-modal');
+      if (show) {
+        modal.classList.remove('hidden');
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
+    function handleModalBackdropClick(e) {
+      if (e.target.id === 'readme-modal') {
+        toggleModal(false);
+      }
+    }
+
+    // Toast Message
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-message');
+      toastMsg.innerText = msg;
+      
+      toast.classList.remove('hidden', 'translate-y-2', 'opacity-0');
+      
+      setTimeout(() => {
+        toast.classList.add('translate-y-2', 'opacity-0');
+        setTimeout(() => toast.classList.add('hidden'), 300);
+      }, 2500);
+    }
+
+    // Word Document Export Functionality
+    function exportWord() {
+      const esc = s => String(s || "").replace(/[&<>"']/g, c => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[c]));
+
+      const ranked = [...items].sort((a, b) => priority(b) - priority(a));
+
+      const rows = ranked.map((x, i) => {
+        const laneLabel = lanes.find(l => l.key === x.decision)?.label || "Nog te bepalen";
+        return `<tr>
+          <td>${i + 1}</td>
+          <td><b>${esc(x.name)}</b></td>
+          <td>${x.value.toFixed(1)}</td>
+          <td>${x.urgency.toFixed(1)}</td>
+          <td>${x.effort.toFixed(1)}</td>
+          <td>${x.feasibility.toFixed(1)}</td>
+          <td><b>${priority(x).toFixed(1)}</b></td>
+          <td>${esc(laneLabel)}</td>
+          <td>${esc(x.owner)}</td>
+          <td>${esc(x.nextStep)}</td>
+        </tr>`;
+      }).join("");
+
+      const sections = lanes.map(l => {
+        const lanePlacedItems = items.filter(x => x.decision === l.key);
+        const itemContent = lanePlacedItems.length > 0 
+          ? lanePlacedItems.map(x => `
+            <h3>${esc(x.name)}</h3>
+            <p>
+              <b>Prioriteitsscore:</b> ${priority(x).toFixed(1)}<br>
+              <b>Eigenaar:</b> ${esc(x.owner) || "Nog te bepalen"}<br>
+              <b>Eerstvolgende stap:</b> ${esc(x.nextStep) || "Nog te bepalen"}
+            </p>
+          `).join("")
+          : "<p><i>Geen onderwerpen geplaatst.</i></p>";
+
+        return `<h2>${l.label} - ${l.horizon}</h2>${itemContent}`;
+      }).join("");
+
+      const html = `<html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Aptos, Arial, sans-serif; color: #172033; margin: 32px; }
+            h1 { color: #312e81; font-size: 20pt; }
+            h2 { margin-top: 28px; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px; color: #1e293b; font-size: 14pt; }
+            h3 { color: #4338ca; font-size: 11pt; margin-bottom: 4px; }
+            table { border-collapse: collapse; width: 100%; font-size: 9pt; margin-top: 12px; }
+            th { background: #334155; color: white; padding: 8px; text-align: left; border: 1px solid #cbd5e1; }
+            td { border: 1px solid #cbd5e1; padding: 6px; text-align: left; }
+            p { line-height: 1.45; font-size: 10pt; margin-top: 4px; }
+          </style>
+        </head>
+        <body>
+          <h1>Verslag Innovatiesessie 2</h1>
+          <p>Gegenereerd op <b>${new Date().toLocaleDateString("nl-NL")}</b>. De prioriteitsscore ondersteunt de gezamenlijke keuze.</p>
+          
+          <h2>Gerangschikt overzicht</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Onderwerp</th>
+                <th>Waarde</th>
+                <th>Urgentie</th>
+                <th>Effort</th>
+                <th>Haalbaarheid</th>
+                <th>Score</th>
+                <th>Keuze</th>
+                <th>Eigenaar</th>
+                <th>Eerstvolgende stap</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows}
+            </tbody>
+          </table>
+
+          ${sections}
+        </body>
+      </html>`;
+
+      const blob = new Blob(["\ufeff", html], { type: "application/msword" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Verslag_Innovatiesessie_2.doc";
+      a.click();
+      URL.revokeObjectURL(url);
+
+      showToast("Verslag geëxporteerd als .doc!");
+    }
+
+    // Helper: Escape HTML strings safely
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+  </script>
+</body>
+</html>
